@@ -1,0 +1,8 @@
+// Stand-in for <cstddef> when trt_shim.cpp is compiled free standing (Windows).
+#pragma once
+#include <stddef.h>
+namespace std {
+using ::size_t;
+using ::ptrdiff_t;
+typedef decltype(nullptr) nullptr_t;
+}

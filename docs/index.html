@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>mpv-NFUA — Native CUDA &amp; TensorRT RIFE Frame Interpolation</title>
+  <meta name="description" content="mpv 0.42 with built-in CUDA Graph &amp; TensorRT 11.4 RIFE v4.6 frame interpolation for Windows and Linux.">
+  <style>
+    :root {
+      --bg-light: #f6f7fb;
+      --surface-light: #ffffff;
+      --surface-2-light: #eef1f7;
+      --border-light: #d7deeb;
+      --text-light: #101624;
+      --muted-light: #4e5b73;
+      --accent-light: #0d5bd9;
+      --accent-ink-light: #ffffff;
+      --code-bg-light: #e9eef8;
+      --ok-light: #0d7a47;
+
+      --bg-dark: #0a0d14;
+      --surface-dark: #121722;
+      --surface-2-dark: #182030;
+      --border-dark: #253047;
+      --text-dark: #eef2fb;
+      --muted-dark: #9ba8c2;
+      --accent-dark: #4ea1ff;
+      --accent-ink-dark: #051326;
+      --code-bg-dark: #161f30;
+      --ok-dark: #3dd68c;
+
+      --bg: var(--bg-light);
+      --surface: var(--surface-light);
+      --surface-2: var(--surface-2-light);
+      --border: var(--border-light);
+      --text: var(--text-light);
+      --muted: var(--muted-light);
+      --accent: var(--accent-light);
+      --accent-ink: var(--accent-ink-light);
+      --code-bg: var(--code-bg-light);
+      --ok: var(--ok-light);
+      --scrollbar-track: #e6ebf5;
+      --scrollbar-thumb: #8d9bb5;
+
+      @media (prefers-color-scheme: dark) {
+        --bg: var(--bg-dark);
+        --surface: var(--surface-dark);
+        --surface-2: var(--surface-2-dark);
+        --border: var(--border-dark);
+        --text: var(--text-dark);
+        --muted: var(--muted-dark);
+        --accent: var(--accent-dark);
+        --accent-ink: var(--accent-ink-dark);
+        --code-bg: var(--code-bg-dark);
+        --ok: var(--ok-dark);
+        --scrollbar-track: #141a26;
+        --scrollbar-thumb: #4b5c7d;
+      }
+
+      @supports (color: light-dark(white, black)) {
+        --bg: light-dark(var(--bg-light), var(--bg-dark));
+        --surface: light-dark(var(--surface-light), var(--surface-dark));
+        --surface-2: light-dark(var(--surface-2-light), var(--surface-2-dark));
+        --border: light-dark(var(--border-light), var(--border-dark));
+        --text: light-dark(var(--text-light), var(--text-dark));
+        --muted: light-dark(var(--muted-light), var(--muted-dark));
+        --accent: light-dark(var(--accent-light), var(--accent-dark));
+        --accent-ink: light-dark(var(--accent-ink-light), var(--accent-ink-dark));
+        --code-bg: light-dark(var(--code-bg-light), var(--code-bg-dark));
+        --ok: light-dark(var(--ok-light), var(--ok-dark));
+        --scrollbar-track: light-dark(#e6ebf5, #141a26);
+        --scrollbar-thumb: light-dark(#8d9bb5, #4b5c7d);
+      }
+
+      color-scheme: light dark;
+      accent-color: var(--accent);
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    a { color: var(--accent); }
+    code, pre {
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-size: 0.92em;
+    }
+    code {
+      background: var(--code-bg);
+      padding: 0.14em 0.4em;
+      border-radius: 5px;
+    }
+    pre {
+      margin: 0.75rem 0;
+      padding: 1rem;
+      overflow-x: auto;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    pre code { background: none; padding: 0; }
+
+    .wrap {
+      max-inline-size: 1040px;
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 3vw, 2rem);
+    }
+
+    header.topbar {
+      border-block-end: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .topbar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1.5rem;
+      padding-block: 0.9rem;
+    }
+    .brand {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .brand span { color: var(--accent); }
+    nav.topnav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.1rem;
+      font-size: 0.95rem;
+    }
+    nav.topnav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    nav.topnav a:hover, nav.topnav a:focus-visible { color: var(--text); }
+
+    .hero {
+      padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 4vw, 3rem);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.28rem 0.75rem;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .badge strong { color: var(--ok); }
+    h1 {
+      font-size: clamp(2rem, 4.8vw, 3.3rem);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      margin: 0.9rem 0 1rem;
+    }
+    .lead {
+      font-size: clamp(1.05rem, 1.8vw, 1.24rem);
+      color: var(--muted);
+      max-inline-size: 66ch;
+      margin: 0 0 1.6rem;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-block-end: 1.25rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.72rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 650;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+    .btn:hover { opacity: 0.92; }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.75rem;
+      margin-block-start: 1.5rem;
+    }
+    .pipe-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.95rem 1.05rem;
+    }
+    .pipe-step small {
+      display: block;
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.74rem;
+    }
+    .pipe-step strong { display: block; margin-block: 0.18rem; }
+    .pipe-step span { color: var(--muted); font-size: 0.9rem; }
+
+    section { padding-block: 2rem; }
+    section h2 {
+      font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+      letter-spacing: -0.02em;
+      margin: 0 0 0.85rem;
+    }
+
+    /* Tabs following modern-web-guidance/tabs */
+    .tabs { margin-block-start: 0.5rem; }
+    .tablist {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      border-block-end: 1px solid var(--border);
+      gap: 0.25rem;
+    }
+    .tablist [role="tab"] {
+      position: relative;
+      flex: none;
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: var(--muted);
+      font: inherit;
+      font-weight: 650;
+      padding: 0.7rem 1.1rem;
+      cursor: pointer;
+    }
+    .tablist [role="tab"]:hover { color: var(--text); }
+    .tablist [role="tab"][aria-selected="true"] {
+      color: var(--accent);
+    }
+    .tablist [role="tab"][aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      border-block-end: 3px solid var(--accent);
+    }
+
+    .panels {
+      display: grid;
+    }
+    [role="tabpanel"] {
+      grid-area: 1 / 1;
+    }
+    .panel-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-block-start: 0;
+      border-radius: 0 0 12px 12px;
+      padding: 1.25rem;
+    }
+    .panel-body h3 { margin-top: 0; }
+    .panel-body ol, .panel-body ul { padding-inline-start: 1.3rem; }
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.75rem;
+      margin-block: 1rem;
+    }
+    .stat-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+    }
+    .stat-box strong { display: block; font-size: 1.15rem; }
+    .stat-box span { color: var(--muted); font-size: 0.86rem; }
+
+    /* Responsive Tables following modern-web-guidance/responsive-table */
+    .table-wrapper {
+      overflow: auto;
+      max-inline-size: 100%;
+      max-block-size: min(560px, 80vh);
+      container-type: inline-size;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    caption {
+      text-align: left;
+      padding: 0.85rem 1rem;
+      font-weight: 650;
+      color: var(--muted);
+      border-block-end: 1px solid var(--border);
+    }
+    th, td {
+      padding: 0.68rem 0.95rem;
+      border-block-end: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    thead {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 2;
+      background: var(--surface-2);
+    }
+    tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      z-index: 1;
+      background: var(--surface);
+      font-weight: 650;
+    }
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-block-end: 0; }
+
+    .bench-table {
+      --label-1: "Resolution";
+      --label-2: "Flow";
+      --label-3: "Tensor";
+      --label-4: "Windows (RTX 4070 Ti)";
+      --label-5: "Linux Reference";
+      --label-6: "Auto (160 Hz)";
+    }
+    .keys-table {
+      --label-1: "Key";
+      --label-2: "Action";
+    }
+
+    @container (width < 600px) {
+      .table-wrapper table,
+      .table-wrapper thead,
+      .table-wrapper tbody,
+      .table-wrapper tr,
+      .table-wrapper th,
+      .table-wrapper td {
+        display: block;
+      }
+      .table-wrapper thead {
+        display: none;
+      }
+      .table-wrapper tbody tr {
+        margin: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .table-wrapper tbody th {
+        position: sticky;
+        inset-block-start: 0;
+        z-index: 2;
+        background: var(--surface-2);
+      }
+      .table-wrapper td { white-space: normal; }
+      .bench-table td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 650; color: var(--muted); }
+      .bench-table td:nth-child(3)::before { content: var(--label-3) ": "; font-weight: 650; color: var(--muted); }
+      .bench-table td:nth-child(4)::before { content: var(--label-4) ": "; font-weight: 650; color: var(--muted); }
+      .bench-table td:nth-child(5)::before { content: var(--label-5) ": "; font-weight: 650; color: var(--muted); }
+      .bench-table td:nth-child(6)::before { content: var(--label-6) ": "; font-weight: 650; color: var(--muted); }
+      .keys-table td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 650; color: var(--muted); }
+    }
+
+    footer {
+      border-block-start: 1px solid var(--border);
+      padding-block: 1.75rem;
+      margin-block-start: 2rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @supports not (scrollbar-color: auto) {
+      .table-wrapper, .tablist { scrollbar-width: auto; }
+      .table-wrapper::-webkit-scrollbar, .tablist::-webkit-scrollbar { width: 10px; height: 10px; }
+      .table-wrapper::-webkit-scrollbar-thumb, .tablist::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); }
+      .table-wrapper::-webkit-scrollbar-track, .tablist::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#">mpv-<span>NFUA</span></a>
+      <nav class="topnav" aria-label="Page sections">
+        <a href="#install">Install</a>
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#hotkeys">Hotkeys</a>
+        <a href="https://github.com/NoobFromUA-YT/mpv-NFUA">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="badge"><strong>mpv 0.42 + RIFE v4.6</strong> Native CUDA Graph &amp; TensorRT 11.4</div>
+      <h1>Zero-copy AI frame interpolation inside mpv.</h1>
+      <p class="lead">
+        No VapourSynth, no Python frame server, no CPU texture copies. <strong>mpv-NFUA</strong> runs
+        NVDEC decode, CUDA kernels, TensorRT inference, and Vulkan presentation on one GPU pipeline
+        for both <strong>Windows</strong> and <strong>Linux</strong>.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Install-MPV-NFUA.bat">Download Windows Installer (~17 KB)</a>
+        <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/MPV-NFUA-Windows-Portable.zip">Portable ZIP (85 MB)</a>
+        <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest">All Releases</a>
+      </div>
+
+      <div class="pipeline" aria-label="Pipeline stages">
+        <div class="pipe-step">
+          <small>1. Decode</small>
+          <strong>NVDEC</strong>
+          <span>Frames stay in CUDA device memory</span>
+        </div>
+        <div class="pipe-step">
+          <small>2. Scene Cut</small>
+          <strong>High-Priority SCD</strong>
+          <span>Cuts skip TensorRT inference cleanly</span>
+        </div>
+        <div class="pipe-step">
+          <small>3. Interpolate</small>
+          <strong>1 CUDA Graph / Frame</strong>
+          <span>TensorRT 11.4 fp16 + sliced 4K pacing</span>
+        </div>
+        <div class="pipe-step">
+          <small>4. Display</small>
+          <strong>Vulkan gpu-next</strong>
+          <span>CUDA-Vulkan interop + Alt+7 HDR looks</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Installation (Windows &amp; Linux)</h2>
+      <div class="tabs">
+        <div class="tablist" role="tablist" focusgroup="tablist nomemory" aria-label="Platform installation">
+          <button type="button" role="tab" id="tab-win" aria-selected="true" focusgroupstart>Windows 10 / 11</button>
+          <button type="button" role="tab" id="tab-lin" aria-selected="false">Linux</button>
+        </div>
+        <div class="panels">
+          <div role="tabpanel" id="panel-win" aria-labelledby="tab-win" tabindex="0">
+            <div class="panel-body">
+              <h3>1-Click Smart Web Installer</h3>
+              <p>
+                Download <a href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Install-MPV-NFUA.bat"><code>Install-MPV-NFUA.bat</code></a>
+                and double-click it. Needs an NVIDIA RTX 20-series or newer GPU with a CUDA 13-capable driver.
+              </p>
+              <div class="stat-strip">
+                <div class="stat-box"><strong>17 KB</strong><span>Single-file .bat installer</span></div>
+                <div class="stat-box"><strong>85 MB + ~349 MB</strong><span>Portable runtime + your GPU's TRT DLLs</span></div>
+                <div class="stat-box"><strong>~782 MB</strong><span>Final disk size (saves ~1.6 GB)</span></div>
+              </div>
+              <ol>
+                <li>Pick an install folder (defaults to <code>%LOCALAPPDATA%\MPV-NFUA</code>).</li>
+                <li>Installer fetches the 85 MB runtime ZIP and streams only the 3 TensorRT 11.4 DLLs matching your GPU's compute capability from <code>pypi.nvidia.com</code> (CRC32-verified).</li>
+                <li>Compiles both TensorRT engines via <code>rife-bench.exe</code> and writes <code>rife-preset.conf</code> for your monitor's refresh rate.</li>
+                <li>Optionally creates a Desktop shortcut and sets <code>mpv-NFUA</code> as your default <code>mpv</code>.</li>
+              </ol>
+            </div>
+          </div>
+          <div role="tabpanel" id="panel-lin" aria-labelledby="tab-lin" hidden="until-found">
+            <div class="panel-body">
+              <h3>Linux Build &amp; Config</h3>
+              <p>
+                Uses the exact same <code>source/video/filter/vf_rife.c</code>, <code>source/video/filter/rife/</code>, and <code>source/portable_config/</code> scripts.
+              </p>
+              <pre><code>git clone --depth 1 https://github.com/mpv-player/mpv.git
+cd mpv &amp;&amp; git apply ../source/mpv-changes.patch
+cp -r ../source/video/filter/* video/filter/
+../source/build.sh</code></pre>
+              <p>
+                Requires FFmpeg, <code>libplacebo &gt;= 7.387.0</code>, LuaJIT, Vulkan, CUDA Toolkit (<code>nvcc</code>), and TensorRT 11.4.
+                Copy <code>source/portable_config/</code> to <code>~/.config/mpv/</code> and place <code>rife_v4.6.onnx</code> + <code>rife_v4.6_half.onnx</code> in <code>rife/</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmarks">
+      <h2>Verified Benchmarks</h2>
+      <div tabindex="0" role="region" aria-labelledby="bench-cap" class="table-wrapper">
+        <table class="bench-table">
+          <caption id="bench-cap">NVIDIA GeForce RTX 4070 Ti @ 160 Hz (rife-bench, 20 runs median GPU ms/frame)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Resolution</th>
+              <th scope="col">Flow</th>
+              <th scope="col">Tensor</th>
+              <th scope="col">Windows (Driver 596.21)</th>
+              <th scope="col">Linux Reference</th>
+              <th scope="col">Auto (160 Hz)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">720p (1280x720)</th>
+              <td>Full</td>
+              <td>1280x704</td>
+              <td>2.70 ms</td>
+              <td>2.61 ms</td>
+              <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
+            </tr>
+            <tr>
+              <th scope="row">720p (1280x720)</th>
+              <td>Half</td>
+              <td>1280x704</td>
+              <td>1.82 ms</td>
+              <td>1.84 ms</td>
+              <td>High-fps auto</td>
+            </tr>
+            <tr>
+              <th scope="row">1080p (1920x1080)</th>
+              <td>Full</td>
+              <td>1920x1056</td>
+              <td>7.42 ms</td>
+              <td>7.46 ms</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <th scope="row">1080p (1920x1080)</th>
+              <td>Half</td>
+              <td>1920x1024</td>
+              <td>5.04 ms</td>
+              <td>4.99 ms</td>
+              <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
+            </tr>
+            <tr>
+              <th scope="row">1440p (2560x1440)</th>
+              <td>Full</td>
+              <td>2560x1440</td>
+              <td>14.74 ms</td>
+              <td>14.80 ms</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <th scope="row">1440p (2560x1440)</th>
+              <td>Half</td>
+              <td>2560x1408</td>
+              <td>10.42 ms</td>
+              <td>10.44 ms</td>
+              <td>24-&gt;4x, 30-&gt;3x, 60-&gt;2x</td>
+            </tr>
+            <tr>
+              <th scope="row">4K (3840x2160)</th>
+              <td>Half</td>
+              <td>3840x2112</td>
+              <td>23.89 ms</td>
+              <td>24.04 ms</td>
+              <td>24-&gt;2x, 30-&gt;2x (50/60: off)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="hotkeys">
+      <h2>Hotkeys</h2>
+      <div tabindex="0" role="region" aria-labelledby="keys-cap" class="table-wrapper">
+        <table class="keys-table">
+          <caption id="keys-cap">Built-in controls from portable_config/input.conf</caption>
+          <thead>
+            <tr>
+              <th scope="col">Key</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>Alt+0</code></th><td>Automatic multiplier &amp; flow selection (default)</td></tr>
+            <tr><th scope="row"><code>Alt+1</code></th><td>Turn RIFE off (original fps)</td></tr>
+            <tr><th scope="row"><code>Alt+2</code> .. <code>Alt+6</code></th><td>Force <code>2x</code> .. <code>6x</code> multiplier</td></tr>
+            <tr><th scope="row"><code>Alt+7</code></th><td>Cycle HDR tone-mapping look (<code>look.lua</code>)</td></tr>
+            <tr><th scope="row"><code>Alt+8</code></th><td>Cycle trim mode (<code>always</code> / <code>nearest</code> / <code>no</code>)</td></tr>
+            <tr><th scope="row"><code>Alt+9</code></th><td>Re-measure GPU &amp; monitor refresh rate</td></tr>
+            <tr><th scope="row"><code>+</code> / <code>=</code> / <code>-</code></th><td>Step playback speed by <code>1x</code> (auto-rescales RIFE)</td></tr>
+            <tr><th scope="row"><code>MBTN_BACK</code> / <code>MBTN_FORWARD</code></th><td>Toggle fullscreen / seek +10s</td></tr>
+            <tr><th scope="row"><code>o</code> / <code>щ</code></th><td>Quit player</td></tr>
+            <tr><th scope="row"><code>i</code></th><td>Toggle mpv stats (fps &amp; dropped frames)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <a href="https://github.com/NoobFromUA-YT/mpv-NFUA">NoobFromUA-YT/mpv-NFUA</a> ·
+      GPLv2+ / LGPLv2.1+ (mpv &amp; vf_rife) · TensorRT 11.4 fetched from NVIDIA at install time.
+    </div>
+  </footer>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+    function selectTab(target, focusTab) {
+      for (const tab of tabs) {
+        const active = tab === target;
+        tab.setAttribute('aria-selected', String(active));
+        tab.toggleAttribute('focusgroupstart', active);
+      }
+      for (const panel of panels) {
+        const active = panel.getAttribute('aria-labelledby') === target.id;
+        if (active) {
+          panel.removeAttribute('hidden');
+          panel.tabIndex = 0;
+        } else {
+          panel.setAttribute('hidden', 'until-found');
+          panel.removeAttribute('tabindex');
+        }
+      }
+      if (focusTab) {
+        target.focus();
+        target.scrollIntoView({ block: 'nearest', inline: 'nearest', container: 'nearest' });
+      }
+    }
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => selectTab(tab, false));
+      tab.addEventListener('keydown', (e) => {
+        if (Object.hasOwn(HTMLElement.prototype, 'focusGroup')) return;
+        const idx = tabs.indexOf(tab);
+        let next = -1;
+        if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+        else if (e.key === 'Home') next = 0;
+        else if (e.key === 'End') next = tabs.length - 1;
+        if (next >= 0) {
+          e.preventDefault();
+          selectTab(tabs[next], true);
+        }
+      });
+    }
+
+    for (const panel of panels) {
+      panel.addEventListener('beforematch', () => {
+        const owner = document.getElementById(panel.getAttribute('aria-labelledby'));
+        if (owner) selectTab(owner, false);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+mpv-NFUA License Notice
+=======================
+
+1. mpv & vf_rife source code (`source/`):
+   Licensed under the GNU General Public License v2.0 or later (GPLv2+) /
+   GNU Lesser General Public License v2.1 or later (LGPLv2.1+), matching
+   upstream mpv (https://github.com/mpv-player/mpv) and individual file headers
+   in `source/`.
+
+2. Installer & scripts (`Install-MPV-NFUA.bat`, `portable_config/scripts/`):
+   Licensed under LGPLv2.1+ / MIT.
+
+3. NVIDIA TensorRT runtime libraries:
+   Not redistributed in this Git repository. On Windows, `Install-MPV-NFUA.bat`
+   fetches only the TensorRT 11.4 DLLs required for your GPU directly from
+   NVIDIA's official PyPI distribution (`pypi.nvidia.com`) at install time,
+   subject to NVIDIA's TensorRT Software License Agreement.

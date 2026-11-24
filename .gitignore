@@ -1,0 +1,26 @@
+# Compiled binaries & libraries (distributed via GitHub Releases)
+*.exe
+*.com
+*.dll
+*.so
+*.so.*
+*.obj
+*.o
+
+# ML models, compiled TensorRT engines & caches
+*.onnx
+*.engine
+*.timingcache
+rife-preset.conf
+portable_config/cache/
+
+# Archives & logs
+*.zip
+*.tar.gz
+*.7z
+*.log
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

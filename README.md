@@ -89,17 +89,17 @@ Useful flags: `--dir <path>`, `--register`, `--no-prompt`, `--skip-bench`, `--bu
 
 ## Verified Benchmarks (RTX 4070 Ti, 3840x2160 @ 160 Hz)
 
-Measured via `rife-bench` (40 runs on Linux driver `595.99`, 20 runs on Windows driver `596.21`, median GPU ms per interpolated frame):
+Measured via `rife-bench` (40 runs on Linux driver `595.99`, 20 runs on Windows driver `596.21`; **Max Output FPS** from a `24 fps` source = `1000/ms + 24`):
 
-| Resolution | Flow Mode | Tensor Size | Windows (Driver 596.21) | Linux (Driver 595.99) | Auto Multiplier (160 Hz) |
+| Resolution | Flow Mode | Max Output FPS (24 fps src) | Windows (`ms`) | Linux (`ms`) | Auto Multiplier (160 Hz) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **720p** (`1280x720`) | Full | `1280x704` | `2.70 ms` | `2.63 ms` | `24->6x`, `30->5x`, `60->2x` |
-| **720p** (`1280x720`) | Half | `1280x704` | `1.82 ms` | `1.83 ms` | (used on high fps) |
-| **1080p** (`1920x1080`) | Full | `1920x1056` | `7.42 ms` | `7.45 ms` | — |
-| **1080p** (`1920x1080`) | Half | `1920x1024` | `5.04 ms` | `5.03 ms` | `24->6x`, `30->5x`, `60->2x` |
-| **1440p** (`2560x1440`) | Full | `2560x1440` | `14.74 ms` | `14.84 ms` | — |
-| **1440p** (`2560x1440`) | Half | `2560x1408` | `10.42 ms` | `10.42 ms` | `24->4x`, `30->3x`, `60->2x` |
-| **4K** (`3840x2160`) | Half | `3840x2112` | `23.89 ms` | `24.03 ms` | `24->2x`, `30->2x` (`50/60`: off) |
+| **720p** (`1280x720`) | Full | **`~404 FPS`** | `2.70 ms` | `2.63 ms` | `24->6x`, `30->5x`, `60->2x` |
+| **720p** (`1280x720`) | Half | **`~570 FPS`** | `1.82 ms` | `1.83 ms` | (used on high fps) |
+| **1080p** (`1920x1080`) | Full | **`~158 FPS`** | `7.42 ms` | `7.45 ms` | — |
+| **1080p** (`1920x1080`) | Half | **`~223 FPS`** | `5.04 ms` | `5.03 ms` | `24->6x`, `30->5x`, `60->2x` |
+| **1440p** (`2560x1440`) | Full | **`~91 FPS`** | `14.74 ms` | `14.84 ms` | — |
+| **1440p** (`2560x1440`) | Half | **`~120 FPS`** | `10.42 ms` | `10.42 ms` | `24->4x`, `30->3x`, `60->2x` |
+| **4K** (`3840x2160`) | Half | **`~66 FPS`** (`30->60 live`) | `23.89 ms` | `24.03 ms` | `24->2x`, `30->2x` (`50/60`: off) |
 
 ### Efficiency & Scene-Cut Comparison (Linux, RTX 4070 Ti, 1080p 24 → 144 fps `6x` half flow)
 

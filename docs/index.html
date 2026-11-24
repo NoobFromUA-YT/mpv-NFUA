@@ -340,9 +340,9 @@
     .bench-table {
       --label-1: "Resolution";
       --label-2: "Flow";
-      --label-3: "Tensor";
-      --label-4: "Windows (RTX 4070 Ti)";
-      --label-5: "Linux Reference";
+      --label-3: "Max FPS (24 fps src)";
+      --label-4: "Windows (ms)";
+      --label-5: "Linux (ms)";
       --label-6: "Auto (160 Hz)";
     }
     .keys-table {
@@ -503,8 +503,8 @@
           <figcaption>Linux smart installer streaming only 3 GPU-specific TensorRT 11.4 libraries (469 MB vs 3.64 GB wheel) and auto-calibrating.</figcaption>
         </figure>
         <figure class="shot-card wide">
-          <a href="screenshots/benchmarks-rtx4070ti.png"><img src="screenshots/benchmarks-rtx4070ti.png" alt="RTX 4070 Ti Windows vs Linux latency and power/VRAM optimization dashboard" loading="lazy"></a>
-          <figcaption>RTX 4070 Ti Windows vs Linux single-frame latency and 1080p 144 fps optimization gains (-14.3 W, -431 MiB VRAM, 2.6x smaller activations).</figcaption>
+          <a href="screenshots/benchmarks-rtx4070ti.png"><img src="screenshots/benchmarks-rtx4070ti.png" alt="RTX 4070 Ti Windows vs Linux potential output FPS and power/VRAM optimization dashboard" loading="lazy"></a>
+          <figcaption>RTX 4070 Ti Windows vs Linux potential output FPS (from 24 fps source) and 1080p 144 fps optimization gains (-14.3 W, -431 MiB VRAM, 2.6x smaller activations).</figcaption>
         </figure>
       </div>
     </section>
@@ -584,12 +584,12 @@ cp -r ../source/video/filter/* video/filter/
       </div>
       <div tabindex="0" role="region" aria-labelledby="bench-cap" class="table-wrapper">
         <table class="bench-table">
-          <caption id="bench-cap">NVIDIA GeForce RTX 4070 Ti @ 160 Hz (rife-bench median GPU ms/frame: Windows 20 runs, Linux 40 runs)</caption>
+          <caption id="bench-cap">NVIDIA GeForce RTX 4070 Ti @ 160 Hz (Potential Output FPS from 24 fps source &amp; GPU ms/frame)</caption>
           <thead>
             <tr>
               <th scope="col">Resolution</th>
               <th scope="col">Flow</th>
-              <th scope="col">Tensor</th>
+              <th scope="col">Max FPS (24 fps src)</th>
               <th scope="col">Windows (Driver 596.21)</th>
               <th scope="col">Linux (Driver 595.99)</th>
               <th scope="col">Auto (160 Hz)</th>
@@ -599,7 +599,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">720p (1280x720)</th>
               <td>Full</td>
-              <td>1280x704</td>
+              <td><strong>~404 FPS</strong></td>
               <td>2.70 ms</td>
               <td>2.63 ms</td>
               <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
@@ -607,7 +607,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">720p (1280x720)</th>
               <td>Half</td>
-              <td>1280x704</td>
+              <td><strong>~570 FPS</strong></td>
               <td>1.82 ms</td>
               <td>1.83 ms</td>
               <td>High-fps auto</td>
@@ -615,7 +615,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">1080p (1920x1080)</th>
               <td>Full</td>
-              <td>1920x1056</td>
+              <td><strong>~158 FPS</strong></td>
               <td>7.42 ms</td>
               <td>7.45 ms</td>
               <td>—</td>
@@ -623,7 +623,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">1080p (1920x1080)</th>
               <td>Half</td>
-              <td>1920x1024</td>
+              <td><strong>~223 FPS</strong></td>
               <td>5.04 ms</td>
               <td>5.03 ms</td>
               <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
@@ -631,7 +631,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">1440p (2560x1440)</th>
               <td>Full</td>
-              <td>2560x1440</td>
+              <td><strong>~91 FPS</strong></td>
               <td>14.74 ms</td>
               <td>14.84 ms</td>
               <td>—</td>
@@ -639,7 +639,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">1440p (2560x1440)</th>
               <td>Half</td>
-              <td>2560x1408</td>
+              <td><strong>~120 FPS</strong></td>
               <td>10.42 ms</td>
               <td>10.42 ms</td>
               <td>24-&gt;4x, 30-&gt;3x, 60-&gt;2x</td>
@@ -647,7 +647,7 @@ cp -r ../source/video/filter/* video/filter/
             <tr>
               <th scope="row">4K (3840x2160)</th>
               <td>Half</td>
-              <td>3840x2112</td>
+              <td><strong>~66 FPS</strong> (30-&gt;60 live)</td>
               <td>23.89 ms</td>
               <td>24.03 ms</td>
               <td>24-&gt;2x, 30-&gt;2x (50/60: off)</td>

@@ -1,7 +1,7 @@
 mpv with native RIFE v4.6 frame interpolation - Windows 10 build
 =================================================================
 
-The Windows twin of /home/noobfromua/superMPV on the Kubuntu side: mpv 0.42 with the
+The Windows twin of mpv-NFUA on Linux: mpv 0.42 with the
 built-in "rife" video filter (NVDEC surfaces in, one CUDA graph launch per new frame on
 TensorRT 11.4, CUDA surfaces out). Cross-compiled on Linux on 2026-11-10.
 
@@ -98,7 +98,7 @@ trt_shim.h. The TensorRT DLLs are opened with LoadLibrary on first use.
 
 It was cross-compiled on Linux with llvm-mingw 20261104 against MSYS2 CLANG64 packages
 (FFmpeg 9.0.2, libplacebo 7.387). To rebuild there:
-  cd /home/noobfromua/superMPV && ./build-win.sh --install /run/media/noobfromua/Dawn7/MPV
+  cd /path/to/mpv-nfua && ./build-win.sh --install /path/to/output/MPV-NFUA
 Building on Windows itself should work the same way in an MSYS2 CLANG64 shell (install
 the mingw-w64-clang-x86_64 packages of ffmpeg, libplacebo, libass, luajit, meson, ninja,
 clang) with the meson options from build-win.sh; that has not been tried. The kernels

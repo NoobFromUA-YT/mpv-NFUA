@@ -92,7 +92,7 @@ else
         include_directories: include_directories('../../..'),
         dependencies: [nvinfer, nvonnxparser, libdl,
                        declare_dependency(compile_args: rife_inc_args)],
-        # TensorRT is in superMPV/lib, four levels up from build/video/filter/rife.
+        # TensorRT is in mpv-nfua/lib, four levels up from build/video/filter/rife.
         link_args: ['-Wl,--disable-new-dtags,-rpath,$ORIGIN/../../../../lib'],
         build_by_default: true,
     )

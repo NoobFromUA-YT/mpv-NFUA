@@ -2,7 +2,7 @@
 # Cross-compiles the Windows build of mpv with the native RIFE filter into build-win/
 # and, with --install DIR, puts a ready-to-run folder together there.
 #   ./build-win.sh
-#   ./build-win.sh --install /run/media/noobfromua/Dawn7/MPV
+#   ./build-win.sh --install /path/to/output/MPV-NFUA
 # Needs toolchain/win/ (llvm-mingw, the MSYS2 CLANG64 sysroot from msys2_fetch.py and
 # the Windows TensorRT wheel unpacked in trt/); see README.md.
 set -euo pipefail

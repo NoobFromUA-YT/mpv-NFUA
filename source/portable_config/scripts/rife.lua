@@ -37,7 +37,7 @@ local o = {
     -- A fixed rule instead of the automatic choice (0 = off, the automatic choice applies).
     -- With e.g. 2: a video with at most rule_max_fps frames per second whose short side is at
     -- most rule_max_height gets exactly that multiplier; every other video plays as it is.
-    -- YouTube Enhancer's "o" key starts superMPV with 2 / 30 / 1080 (and 2x speed).
+    -- YouTube / external hook example: pass 2 / 30 / 1080 (and 2x speed).
     rule_multiplier = 0,
     rule_max_fps = 30,
     rule_max_height = 1080,
@@ -336,21 +336,26 @@ local function notify(text)
     mp.osd_message(text, 120)
     if package.config:sub(1, 1) == "/" then
         mp.command_native_async({ name = "subprocess", playback_only = false,
-            args = { "notify-send", "-i", "video-x-generic", "-t", "6000", "MPV-Antigravity", text } },
+            args = { "notify-send", "-i", "video-x-generic", "-t", "6000", "mpv-NFUA", text } },
             function() end)
     end
 end
 
 local function bench_path()
-    for _, p in ipairs({ "~~/../build/video/filter/rife/rife-bench", "~~/../rife-bench.exe" }) do
+    for _, p in ipairs({
+        "~~/../bin/rife-bench",
+        "~~/../rife-bench",
+        "~~/../build/video/filter/rife/rife-bench",
+        "~~/../rife-bench.exe",
+    }) do
         local full = expand(p)
         if utils.file_info(full) then return full end
     end
     return nil
 end
 
--- The screen's refresh rate: mpv's own reading once a window is open, else xrandr's
--- current mode on Linux or Win32_VideoController on Windows, else nil.
+-- The screen's refresh rate: mpv's own reading once a window is open, else xrandr /
+-- Wayland outputs on Linux or Win32_VideoController on Windows, else nil.
 local function detect_screen_fps()
     local fps = mp.get_property_number("display-fps")
     if fps and fps > 20 then return math.floor(fps + 0.5) end
@@ -365,12 +370,32 @@ local function detect_screen_fps()
     end
     local r = mp.command_native({ name = "subprocess", playback_only = false,
         capture_stdout = true, args = { "xrandr", "--current" } })
-    if not r or r.status ~= 0 then return nil end
-    -- The connected output's current mode is the rate marked with *.
-    for line in r.stdout:gmatch("[^\n]+") do
-        local rate = tonumber(line:match("([%d%.]+)%*") or "")
-        -- A virtual screen reports 0 Hz: no answer then.
-        if rate and rate >= 20 then return math.floor(rate + 0.5) end
+    if r and r.status == 0 and r.stdout then
+        -- The connected output's current mode is the rate marked with *.
+        for line in r.stdout:gmatch("[^\n]+") do
+            local rate = tonumber(line:match("([%d%.]+)%*") or "")
+            -- A virtual screen reports 0 Hz: no answer then.
+            if rate and rate >= 20 then return math.floor(rate + 0.5) end
+        end
+    end
+    -- Wayland fallbacks (wlroots / KDE Plasma) when xrandr is unavailable or Xwayland hides real Hz.
+    local wr = mp.command_native({ name = "subprocess", playback_only = false,
+        capture_stdout = true, args = { "wlr-randr" } })
+    if wr and wr.status == 0 and wr.stdout then
+        for line in wr.stdout:gmatch("[^\n]+") do
+            if line:find("current", 1, true) then
+                local rate = tonumber(line:match("([%d%.]+)%s*Hz"))
+                if rate and rate >= 20 then return math.floor(rate + 0.5) end
+            end
+        end
+    end
+    local kr = mp.command_native({ name = "subprocess", playback_only = false,
+        capture_stdout = true, args = { "kscreen-doctor", "-o" } })
+    if kr and kr.status == 0 and kr.stdout then
+        for line in kr.stdout:gmatch("[^\n]+") do
+            local rate = tonumber(line:match("@([%d%.]+)%*") or line:match("@([%d%.]+).*current"))
+            if rate and rate >= 20 then return math.floor(rate + 0.5) end
+        end
     end
     return nil
 end
@@ -388,7 +413,7 @@ local function write_preset(gpu, failed, details)
         return
     end
     local date = os.date("%Y-%m-%d %H:%M")
-    f:write("# Written by superMPV's performance assessor (scripts/rife.lua) on ", date, ".\n",
+    f:write("# Written by mpv-NFUA's performance assessor (scripts/rife.lua) on ", date, ".\n",
             "# Alt+9 in the player measures again; delete this file to measure at the next start.\n",
             "# A setting in rife.conf wins over the same one here.\n\n")
     f:write("measured=", date, "\n")
@@ -498,13 +523,13 @@ mp.add_hook("on_preloaded", 50, function(hook)
     if (not have_preset and o.assess and bench_path()) or assessing then
         hook:defer()
         if not assessing then
-            notify("MPV-Antigravity: measuring this PC's GPU and screen (once, a few seconds)...")
+            notify("mpv-NFUA: measuring this PC's GPU and screen (once, a few seconds)...")
         end
         assess(function(ok, why)
             if ok then
                 mp.osd_message(summary(), 8)
             else
-                mp.osd_message("MPV-Antigravity: measuring failed (" .. tostring(why) ..
+                mp.osd_message("mpv-NFUA: measuring failed (" .. tostring(why) ..
                                "), Alt+9 tries again", 8)
             end
             start_file()
@@ -568,7 +593,7 @@ end)
 mp.register_script_message("rife-assess", function()
     if assessing then return end
     if not bench_path() then
-        mp.osd_message("MPV-Antigravity: rife-bench is missing, cannot measure")
+        mp.osd_message("mpv-NFUA: rife-bench is missing, cannot measure")
         return
     end
     local was_paused = mp.get_property_bool("pause", false)
@@ -576,7 +601,7 @@ mp.register_script_message("rife-assess", function()
     mp.set_property_bool("pause", true)
     mp.command("no-osd vf remove @rife")
     last_vf_spec = ""
-    mp.osd_message("MPV-Antigravity: measuring this PC's GPU and screen...", 120)
+    mp.osd_message("mpv-NFUA: measuring this PC's GPU and screen...", 120)
     assess(function(ok, why)
         video = video or read_video()
         if was_auto then mode = auto_mode() end
@@ -584,7 +609,7 @@ mp.register_script_message("rife-assess", function()
         if ok then
             mp.osd_message(summary() .. "\n\n" .. describe(flow, load), 10)
         else
-            mp.osd_message("MPV-Antigravity: measuring failed (" .. tostring(why) .. ")\n" ..
+            mp.osd_message("mpv-NFUA: measuring failed (" .. tostring(why) .. ")\n" ..
                            describe(flow, load), 8)
         end
         mp.set_property_bool("pause", was_paused)

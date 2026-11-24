@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>mpv-NFUA — Native CUDA &amp; TensorRT RIFE Frame Interpolation</title>
-  <meta name="description" content="mpv 0.42 with built-in CUDA Graph &amp; TensorRT 11.4 RIFE v4.6 frame interpolation for Windows and Linux.">
+  <title>mpv-NFUA — Zero-Copy CUDA &amp; TensorRT RIFE Frame Interpolation</title>
+  <meta name="description" content="mpv 0.42 with built-in CUDA Graph &amp; TensorRT 11.4 RIFE v4.6 AI frame interpolation for Windows &amp; Linux (1-click installers).">
   <style>
     :root {
       --bg-light: #f6f7fb;
@@ -383,6 +383,43 @@
       .keys-table td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 650; color: var(--muted); }
     }
 
+    .shots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1rem;
+      margin-block-start: 0.75rem;
+    }
+    .shot-card {
+      margin: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .shot-card.wide { grid-column: 1 / -1; }
+    .shot-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .shot-card figcaption {
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      border-block-start: 1px solid var(--border);
+    }
+    details.source-details {
+      margin-block-start: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      background: var(--surface-2);
+    }
+    details.source-details summary {
+      cursor: pointer;
+      font-weight: 650;
+    }
+
     footer {
       border-block-start: 1px solid var(--border);
       padding-block: 1.75rem;
@@ -404,6 +441,7 @@
     <div class="wrap topbar-inner">
       <a class="brand" href="#">mpv-<span>NFUA</span></a>
       <nav class="topnav" aria-label="Page sections">
+        <a href="#screenshots">Screenshots</a>
         <a href="#install">Install</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#hotkeys">Hotkeys</a>
@@ -422,8 +460,10 @@
         for both <strong>Windows</strong> and <strong>Linux</strong>.
       </p>
       <div class="cta-row">
-        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Install-MPV-NFUA.bat">Download Windows Installer (~17 KB)</a>
-        <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/MPV-NFUA-Windows-Portable.zip">Portable ZIP (85 MB)</a>
+        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Install-MPV-NFUA.bat">Windows Installer (~23 KB)</a>
+        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/install-mpv-nfua.sh">Linux Installer (~24 KB)</a>
+        <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/MPV-NFUA-Windows-Portable.zip">Windows ZIP (85 MB)</a>
+        <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/MPV-NFUA-Linux-x86_64.tar.gz">Linux Tarball (22 MB)</a>
         <a class="btn" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest">All Releases</a>
       </div>
 
@@ -448,6 +488,24 @@
           <strong>Vulkan gpu-next</strong>
           <span>CUDA-Vulkan interop + Alt+7 HDR looks</span>
         </div>
+      </div>
+    </section>
+
+    <section id="screenshots">
+      <h2>Preview &amp; Measurements</h2>
+      <div class="shots-grid">
+        <figure class="shot-card">
+          <a href="screenshots/mpv-nfua-playback.png"><img src="screenshots/mpv-nfua-playback.png" alt="mpv-NFUA playing 1080p 24fps interpolated 6x to 144fps with 0 dropped frames" loading="lazy"></a>
+          <figcaption>1080p 24 → 144 fps (<code>multiplier=6:flow=half</code>) with mpv <code>stats</code> overlay showing 0 dropped frames.</figcaption>
+        </figure>
+        <figure class="shot-card">
+          <a href="screenshots/linux-installer.png"><img src="screenshots/linux-installer.png" alt="mpv-NFUA Linux 1-click installer terminal output" loading="lazy"></a>
+          <figcaption>Linux smart installer streaming only 3 GPU-specific TensorRT 11.4 libraries (469 MB vs 3.64 GB wheel) and auto-calibrating.</figcaption>
+        </figure>
+        <figure class="shot-card wide">
+          <a href="screenshots/benchmarks-rtx4070ti.png"><img src="screenshots/benchmarks-rtx4070ti.png" alt="RTX 4070 Ti Windows vs Linux latency and power/VRAM optimization dashboard" loading="lazy"></a>
+          <figcaption>RTX 4070 Ti Windows vs Linux single-frame latency and 1080p 144 fps optimization gains (-14.3 W, -431 MiB VRAM, 2.6x smaller activations).</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -481,18 +539,35 @@
           </div>
           <div role="tabpanel" id="panel-lin" aria-labelledby="tab-lin" hidden="until-found">
             <div class="panel-body">
-              <h3>Linux Build &amp; Config</h3>
+              <h3>1-Click Smart Web Installer</h3>
               <p>
-                Uses the exact same <code>source/video/filter/vf_rife.c</code>, <code>source/video/filter/rife/</code>, and <code>source/portable_config/</code> scripts.
+                Needs an NVIDIA RTX 20-series or newer GPU with a CUDA 13-capable driver. Prebuilt binaries target
+                Ubuntu 26.04+ (<code>glibc 2.43</code>, FFmpeg 8, <code>libplacebo 360</code>); other distros can add <code>--build</code>.
               </p>
-              <pre><code>git clone --depth 1 https://github.com/mpv-player/mpv.git
+              <pre><code>curl -fsSL https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/install-mpv-nfua.sh -o install-mpv-nfua.sh
+bash install-mpv-nfua.sh</code></pre>
+              <div class="stat-strip">
+                <div class="stat-box"><strong>~24 KB</strong><span>Single-file .sh installer</span></div>
+                <div class="stat-box"><strong>22 MB + 469 MB</strong><span>Portable runtime + your GPU's TRT .so libs</span></div>
+                <div class="stat-box"><strong>~923 MB</strong><span>Final disk size (saves ~3.17 GB download)</span></div>
+              </div>
+              <ol>
+                <li>Installs into <code>~/.local/share/mpv-nfua</code> (or pass <code>--dir &lt;path&gt;</code>).</li>
+                <li>Streams only the 3 TensorRT 11.4 <code>.so</code> files matching your GPU's compute capability from <code>pypi.nvidia.com</code> (CRC32-verified).</li>
+                <li>Compiles both TensorRT engines via <code>rife-bench</code> and writes <code>rife-preset.conf</code> for your monitor's refresh rate.</li>
+                <li>Optionally adds <code>~/.local/bin/mpv-nfua</code> and desktop entries (<code>--register</code>).</li>
+              </ol>
+              <details class="source-details">
+                <summary>Build manually from source/ (Ubuntu 24.04, Arch, Fedora, etc.)</summary>
+                <pre><code>git clone --depth 1 https://github.com/mpv-player/mpv.git
 cd mpv &amp;&amp; git apply ../source/mpv-changes.patch
 cp -r ../source/video/filter/* video/filter/
 ../source/build.sh</code></pre>
-              <p>
-                Requires FFmpeg, <code>libplacebo &gt;= 7.387.0</code>, LuaJIT, Vulkan, CUDA Toolkit (<code>nvcc</code>), and TensorRT 11.4.
-                Copy <code>source/portable_config/</code> to <code>~/.config/mpv/</code> and place <code>rife_v4.6.onnx</code> + <code>rife_v4.6_half.onnx</code> in <code>rife/</code>.
-              </p>
+                <p>
+                  Requires FFmpeg, <code>libplacebo &gt;= 7.387.0</code>, LuaJIT, Vulkan, CUDA Toolkit (<code>nvcc</code>), and TensorRT 11.4.
+                  Copy <code>source/portable_config/</code> to <code>~/.config/mpv/</code> and place <code>rife_v4.6.onnx</code> + <code>rife_v4.6_half.onnx</code> in <code>rife/</code>.
+                </p>
+              </details>
             </div>
           </div>
         </div>
@@ -501,16 +576,22 @@ cp -r ../source/video/filter/* video/filter/
 
     <section id="benchmarks">
       <h2>Verified Benchmarks</h2>
+      <div class="stat-strip">
+        <div class="stat-box"><strong>-14.3 W (-9.6%)</strong><span>135.0 W vs 149.3 W @ 1080p 144 fps</span></div>
+        <div class="stat-box"><strong>-431 MiB VRAM</strong><span>1575 MiB vs 2006 MiB peak</span></div>
+        <div class="stat-box"><strong>2.6x Smaller</strong><span>279 MiB vs 726 MiB TRT activations</span></div>
+        <div class="stat-box"><strong>-13.5% Energy</strong><span>High-priority scene-cut TRT skip</span></div>
+      </div>
       <div tabindex="0" role="region" aria-labelledby="bench-cap" class="table-wrapper">
         <table class="bench-table">
-          <caption id="bench-cap">NVIDIA GeForce RTX 4070 Ti @ 160 Hz (rife-bench, 20 runs median GPU ms/frame)</caption>
+          <caption id="bench-cap">NVIDIA GeForce RTX 4070 Ti @ 160 Hz (rife-bench median GPU ms/frame: Windows 20 runs, Linux 40 runs)</caption>
           <thead>
             <tr>
               <th scope="col">Resolution</th>
               <th scope="col">Flow</th>
               <th scope="col">Tensor</th>
               <th scope="col">Windows (Driver 596.21)</th>
-              <th scope="col">Linux Reference</th>
+              <th scope="col">Linux (Driver 595.99)</th>
               <th scope="col">Auto (160 Hz)</th>
             </tr>
           </thead>
@@ -520,7 +601,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Full</td>
               <td>1280x704</td>
               <td>2.70 ms</td>
-              <td>2.61 ms</td>
+              <td>2.63 ms</td>
               <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
             </tr>
             <tr>
@@ -528,7 +609,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Half</td>
               <td>1280x704</td>
               <td>1.82 ms</td>
-              <td>1.84 ms</td>
+              <td>1.83 ms</td>
               <td>High-fps auto</td>
             </tr>
             <tr>
@@ -536,7 +617,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Full</td>
               <td>1920x1056</td>
               <td>7.42 ms</td>
-              <td>7.46 ms</td>
+              <td>7.45 ms</td>
               <td>—</td>
             </tr>
             <tr>
@@ -544,7 +625,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Half</td>
               <td>1920x1024</td>
               <td>5.04 ms</td>
-              <td>4.99 ms</td>
+              <td>5.03 ms</td>
               <td>24-&gt;6x, 30-&gt;5x, 60-&gt;2x</td>
             </tr>
             <tr>
@@ -552,7 +633,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Full</td>
               <td>2560x1440</td>
               <td>14.74 ms</td>
-              <td>14.80 ms</td>
+              <td>14.84 ms</td>
               <td>—</td>
             </tr>
             <tr>
@@ -560,7 +641,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Half</td>
               <td>2560x1408</td>
               <td>10.42 ms</td>
-              <td>10.44 ms</td>
+              <td>10.42 ms</td>
               <td>24-&gt;4x, 30-&gt;3x, 60-&gt;2x</td>
             </tr>
             <tr>
@@ -568,7 +649,7 @@ cp -r ../source/video/filter/* video/filter/
               <td>Half</td>
               <td>3840x2112</td>
               <td>23.89 ms</td>
-              <td>24.04 ms</td>
+              <td>24.03 ms</td>
               <td>24-&gt;2x, 30-&gt;2x (50/60: off)</td>
             </tr>
           </tbody>

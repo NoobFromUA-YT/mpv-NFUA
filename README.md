@@ -13,6 +13,7 @@ No VapourSynth, no Python frame server, no CPU texture copies: NVDEC hardware-de
 - **Latest Release:** https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest
 - **1-Click Windows Installer (~23 KB):** [`Install-MPV-NFUA.bat`](https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Install-MPV-NFUA.bat)
 - **1-Click Linux Installer (~24 KB):** [`install-mpv-nfua.sh`](https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/install-mpv-nfua.sh)
+- **Optional Model Manager / Patcher:** [`Add-RIFE-Models.bat`](Add-RIFE-Models.bat) (Windows GUI) · [`add-rife-models.sh`](add-rife-models.sh) (Linux checkmark TUI)
 
 ---
 
@@ -115,6 +116,37 @@ Live Windows playback (`vo=gpu-next`, `gpu-api=vulkan`, `hwdec=nvdec`): **0 drop
 
 ---
 
+## Optional RIFE Models & Standalone Checkmark Patcher
+
+Base `mpv-NFUA` ships only **`RIFE v4.6`** (`~20.4 MB` ONNX) to keep downloads small and frame rates maxed out. Want higher-quality anime/live-action models like **`v4.25`**, **`v4.25-heavy`**, or **`v4.26`** without bloating the base install? Use the standalone checkmark patcher on top of any install:
+
+- **Windows:** run [`Add-RIFE-Models.bat`](https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Add-RIFE-Models.bat) (interactive checkbox window)
+- **Linux:**
+  ```bash
+  curl -fsSL https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/add-rife-models.sh -o add-rife-models.sh
+  bash add-rife-models.sh
+  ```
+
+What the patcher does:
+- Lets you checkmark any combination of optional models to install (or uncheck to delete & free disk space), verified by SHA256.
+- Patches `portable_config/scripts/rife.lua` and `input.conf` on top of existing installs.
+- Pre-compiles TensorRT 11.4 engines and calibrates separate `rife-preset-<model>.conf` speed profiles.
+- Press **`Alt+m`** / **`Alt+M`** in the player to roll between all installed versions — your last chosen model automatically persists in `portable_config/script-opts/rife-state.conf` across restarts.
+
+### All Supported Models (RTX 4070 Ti, TensorRT 11.4 FP16)
+
+| Model | Role | ONNX Size | Align | `720p` | `1080p` (`24->Max FPS`) | `1440p` | `4K` |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`v4.6`** *(built-in)* | Fastest real-time (full / half) | `20.4 MB` | `32 / 64` | `2.61 / 1.80 ms` | `7.47 / 5.05 ms` (**~222 FPS**) | `14.87 / 10.41 ms` | `23.90 ms` (half) |
+| **`v4.15-lite`** | Fast modern lite, sharper edges | `5.0 MB` | `32` | `4.62 ms` | `11.91 ms` (**~108 FPS**) | `22.61 ms` | `50.91 ms` |
+| **`v4.22-lite`** | Best real-time quality/speed balance | `9.3 MB` | `32` | `5.66 ms` | `14.13 ms` (**~95 FPS**) | `27.05 ms` | `60.46 ms` |
+| **`v4.25-lite`** | Fast modern v4.25 lite | `10.8 MB` | `128` | `4.36 ms` | `11.61 ms` (**~110 FPS**) | `23.77 ms` | `54.56 ms` |
+| **`v4.25`** | Community favorite (anime & line art) | `10.9 MB` | `32` | `6.76 ms` | `17.95 ms` (**~80 FPS**) | `31.74 ms` | `72.65 ms` |
+| **`v4.25-heavy`** | Top quality flagship | `41.4 MB` | `64` | `6.12 ms` | `14.13 ms` (**~95 FPS**) | `29.45 ms` | `68.36 ms` |
+| **`v4.26`** | Latest official Practical-RIFE | `10.9 MB` | `64` | `6.74 ms` | `15.85 ms` (**~87 FPS**) | `30.82 ms` | `69.71 ms` |
+
+---
+
 ## Hotkeys
 
 | Key | Action |
@@ -124,7 +156,8 @@ Live Windows playback (`vo=gpu-next`, `gpu-api=vulkan`, `hwdec=nvdec`): **0 drop
 | `Alt+2` .. `Alt+6` | Fixed `2x` .. `6x` multiplier |
 | `Alt+7` | Cycle HDR tone-mapping look (`look.lua`) |
 | `Alt+8` | Cycle height alignment trim mode (`always` / `nearest` / `no`) |
-| `Alt+9` | Re-run GPU & refresh rate benchmark (`rife-bench`) |
+| `Alt+9` | Re-run GPU & refresh rate benchmark for the active model (`rife-bench`) |
+| `Alt+m` / `Alt+M` | Roll to next / previous installed RIFE model (saved across restarts) |
 | `+` / `=` / `-` | Step playback speed in `1x` increments (`speedstep.lua`, auto-rescales RIFE) |
 | `MBTN_BACK` / `MBTN_FORWARD` | Toggle fullscreen / seek `+10s` |
 | `o` / `щ` | Quit player |

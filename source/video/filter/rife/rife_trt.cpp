@@ -919,8 +919,8 @@ static std::vector<char> build_engine(rife_trt *r, const rife_trt_config *cfg,
         build.profiles[0] = {pw, ph, pw, ph, pw, ph};
     } else {
         build.num_profiles = 2;
-        build.profiles[0] = {kDynMin, kDynMin, 1920, 1024, 2560, 1472};
-        build.profiles[1] = {kDynMin, kDynMin, 3840, 2112, kDynMax, kDynMax};
+        build.profiles[0] = {kDynMin, kDynMin, 1920, 1024, 2560, 1536};
+        build.profiles[1] = {kDynMin, kDynMin, 3840, 2176, kDynMax, kDynMax};
     }
 
     trt_shim_plan compiled = {};

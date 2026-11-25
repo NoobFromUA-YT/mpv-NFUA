@@ -345,6 +345,14 @@
       --label-5: "Linux (ms)";
       --label-6: "Auto (160 Hz)";
     }
+    .models-table {
+      --label-1: "Model";
+      --label-2: "Role";
+      --label-3: "1080p Max FPS (24 src)";
+      --label-4: "Size / Align";
+      --label-5: "720p / 1080p";
+      --label-6: "1440p / 4K";
+    }
     .keys-table {
       --label-1: "Key";
       --label-2: "Action";
@@ -380,6 +388,11 @@
       .bench-table td:nth-child(4)::before { content: var(--label-4) ": "; font-weight: 650; color: var(--muted); }
       .bench-table td:nth-child(5)::before { content: var(--label-5) ": "; font-weight: 650; color: var(--muted); }
       .bench-table td:nth-child(6)::before { content: var(--label-6) ": "; font-weight: 650; color: var(--muted); }
+      .models-table td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 650; color: var(--muted); }
+      .models-table td:nth-child(3)::before { content: var(--label-3) ": "; font-weight: 650; color: var(--muted); }
+      .models-table td:nth-child(4)::before { content: var(--label-4) ": "; font-weight: 650; color: var(--muted); }
+      .models-table td:nth-child(5)::before { content: var(--label-5) ": "; font-weight: 650; color: var(--muted); }
+      .models-table td:nth-child(6)::before { content: var(--label-6) ": "; font-weight: 650; color: var(--muted); }
       .keys-table td:nth-child(2)::before { content: var(--label-2) ": "; font-weight: 650; color: var(--muted); }
     }
 
@@ -443,6 +456,7 @@
       <nav class="topnav" aria-label="Page sections">
         <a href="#screenshots">Screenshots</a>
         <a href="#install">Install</a>
+        <a href="#models">Models</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#hotkeys">Hotkeys</a>
         <a href="https://github.com/NoobFromUA-YT/mpv-NFUA">GitHub</a>
@@ -574,6 +588,41 @@ cp -r ../source/video/filter/* video/filter/
       </div>
     </section>
 
+    <section id="models">
+      <h2>Optional RIFE Models &amp; Checkmark Patcher</h2>
+      <p class="lead">
+        Base <code>mpv-NFUA</code> bundles only <strong>RIFE v4.6</strong> to stay lightweight. Add newer quality-focused models like <strong>v4.25</strong>, <strong>v4.25-heavy</strong>, or <strong>v4.26</strong> on demand — roll between installed versions with <code>Alt+m</code> / <code>Alt+M</code>, and your last pick is saved across restarts.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/Add-RIFE-Models.bat">Windows Model Patcher</a>
+        <a class="btn primary" href="https://github.com/NoobFromUA-YT/mpv-NFUA/releases/latest/download/add-rife-models.sh">Linux Model Patcher</a>
+      </div>
+      <div tabindex="0" role="region" aria-labelledby="models-cap" class="table-wrapper">
+        <table class="models-table">
+          <caption id="models-cap">RTX 4070 Ti FP16 TensorRT 11.4 performance across all supported RIFE versions</caption>
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Role</th>
+              <th scope="col">1080p Max FPS (24 src)</th>
+              <th scope="col">Size / Align</th>
+              <th scope="col">720p / 1080p</th>
+              <th scope="col">1440p / 4K</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>v4.6</code> (built-in)</th><td>Fastest real-time</td><td><strong>~222 FPS</strong> (half)</td><td>20.4 MB · mod32/64</td><td>2.61 / 7.47 ms (1.80 / 5.05 half)</td><td>14.87 / 23.90 ms (half)</td></tr>
+            <tr><th scope="row"><code>v4.15-lite</code></th><td>Fast lite, clean edges</td><td><strong>~108 FPS</strong></td><td>5.0 MB · mod32</td><td>4.62 / 11.91 ms</td><td>22.61 / 50.91 ms</td></tr>
+            <tr><th scope="row"><code>v4.22-lite</code></th><td>Balanced real-time</td><td><strong>~95 FPS</strong></td><td>9.3 MB · mod32</td><td>5.66 / 14.13 ms</td><td>27.05 / 60.46 ms</td></tr>
+            <tr><th scope="row"><code>v4.25-lite</code></th><td>Modern v4.25 lite</td><td><strong>~110 FPS</strong></td><td>10.8 MB · mod128</td><td>4.36 / 11.61 ms</td><td>23.77 / 54.56 ms</td></tr>
+            <tr><th scope="row"><code>v4.25</code></th><td>Anime &amp; line-art favorite</td><td><strong>~80 FPS</strong></td><td>10.9 MB · mod32</td><td>6.76 / 17.95 ms</td><td>31.74 / 72.65 ms</td></tr>
+            <tr><th scope="row"><code>v4.25-heavy</code></th><td>Top quality flagship</td><td><strong>~95 FPS</strong></td><td>41.4 MB · mod64</td><td>6.12 / 14.13 ms</td><td>29.45 / 68.36 ms</td></tr>
+            <tr><th scope="row"><code>v4.26</code></th><td>Latest Practical-RIFE</td><td><strong>~87 FPS</strong></td><td>10.9 MB · mod64</td><td>6.74 / 15.85 ms</td><td>30.82 / 69.71 ms</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section id="benchmarks">
       <h2>Verified Benchmarks</h2>
       <div class="stat-strip">
@@ -674,7 +723,8 @@ cp -r ../source/video/filter/* video/filter/
             <tr><th scope="row"><code>Alt+2</code> .. <code>Alt+6</code></th><td>Force <code>2x</code> .. <code>6x</code> multiplier</td></tr>
             <tr><th scope="row"><code>Alt+7</code></th><td>Cycle HDR tone-mapping look (<code>look.lua</code>)</td></tr>
             <tr><th scope="row"><code>Alt+8</code></th><td>Cycle trim mode (<code>always</code> / <code>nearest</code> / <code>no</code>)</td></tr>
-            <tr><th scope="row"><code>Alt+9</code></th><td>Re-measure GPU &amp; monitor refresh rate</td></tr>
+            <tr><th scope="row"><code>Alt+9</code></th><td>Re-measure GPU &amp; monitor refresh rate for the active model</td></tr>
+            <tr><th scope="row"><code>Alt+m</code> / <code>Alt+M</code></th><td>Roll to next / previous installed RIFE model (saved across restarts)</td></tr>
             <tr><th scope="row"><code>+</code> / <code>=</code> / <code>-</code></th><td>Step playback speed by <code>1x</code> (auto-rescales RIFE)</td></tr>
             <tr><th scope="row"><code>MBTN_BACK</code> / <code>MBTN_FORWARD</code></th><td>Toggle fullscreen / seek +10s</td></tr>
             <tr><th scope="row"><code>o</code> / <code>щ</code></th><td>Quit player</td></tr>

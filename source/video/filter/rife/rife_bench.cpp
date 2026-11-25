@@ -124,9 +124,8 @@ void trim_rows(int h, int mod, int *top, int *bottom)
 }
 
 bool measure(Cuda &cu, CUcontext_ ctx, const char *onnx, const char *engine_dir,
-             bool half, int w, int h, int runs, int opt_level)
+             bool half, int mod, int w, int h, int runs, int opt_level)
 {
-    int mod = half ? 64 : 32;
     rife_trt_config cfg{};
     cfg.cuda_ctx = ctx;
     cfg.w = w;
@@ -191,6 +190,8 @@ int main(int argc, char **argv)
     std::string model, model_half, engine_dir;
     std::string sizes = "1280x720,1920x1080,2560x1440,3840x2160";
     long full_max_pixels = 2560L * 1440;
+    int align = 32;
+    int align_half = 0;
     int runs = 30;
     int opt_level = 3;
     for (int i = 1; i < argc; i++) {
@@ -201,6 +202,8 @@ int main(int argc, char **argv)
         else if (a == "--engine-dir") engine_dir = next();
         else if (a == "--sizes") sizes = next();
         else if (a == "--full-max-pixels") full_max_pixels = atol(next().c_str());
+        else if (a == "--align") align = std::clamp(atoi(next().c_str()), 8, 256);
+        else if (a == "--align-half") align_half = std::clamp(atoi(next().c_str()), 0, 256);
         else if (a == "--runs") runs = std::max(3, atoi(next().c_str()));
         else if (a == "--opt-level") opt_level = std::clamp(atoi(next().c_str()), 0, 5);
         else if (a == "-v") g_verbose = 1;
@@ -211,11 +214,12 @@ int main(int argc, char **argv)
     }
     if (model.empty()) {
         fprintf(stderr, "usage: rife-bench --model FULL.onnx [--model-half HALF.onnx] "
-                        "[--engine-dir DIR] [--sizes WxH,...] [--runs N]\n");
+                        "[--engine-dir DIR] [--sizes WxH,...] [--align N] "
+                        "[--align-half N] [--runs N]\n");
         return 2;
     }
-    if (model_half.empty())
-        model_half = model;
+    bool has_half = !model_half.empty();
+    int eff_align_half = align_half > 0 ? align_half : std::min(256, align * 2);
     if (engine_dir.empty()) {
         size_t slash = model.find_last_of("/\\");
         engine_dir = slash == std::string::npos ? "." : model.substr(0, slash);
@@ -245,11 +249,16 @@ int main(int argc, char **argv)
         int w = 0, h = 0;
         if (sscanf(s.c_str(), "%dx%d", &w, &h) != 2 || w < 128 || h < 128)
             continue;
-        if ((long)w * h <= full_max_pixels)
-            (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, w, h, runs, opt_level)
+        if (!has_half) {
+            (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, w, h, runs, opt_level)
                  ? done : failed)++;
-        (measure(cu, ctx, model_half.c_str(), engine_dir.c_str(), true, w, h, runs, opt_level)
-             ? done : failed)++;
+        } else {
+            if ((long)w * h <= full_max_pixels)
+                (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, w, h, runs, opt_level)
+                     ? done : failed)++;
+            (measure(cu, ctx, model_half.c_str(), engine_dir.c_str(), true, eff_align_half, w, h, runs, opt_level)
+                 ? done : failed)++;
+        }
     }
 
     CUcontext_ dummy;

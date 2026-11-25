@@ -448,9 +448,9 @@ local function apply()
     end
     local model_arg = "~~/rife/" .. active_model.onnx
     local half_arg = active_model.onnx_half and ("~~/rife/" .. active_model.onnx_half) or model_arg
-    local align_arg = active_model.onnx_half and 0 or active_model.align
+    local align_arg = active_model.onnx_half and "auto" or tostring(active_model.align)
     local full_spec = string.format(
-        "@rife:rife=%s:flow=%s:trim=%s:align=%d:model=%s:model-half=%s%s%s",
+        "@rife:rife=%s:flow=%s:trim=%s:align=%s:model=%s:model-half=%s%s%s",
         spec, flow, o.trim, align_arg, model_arg, half_arg,
         slices and "" or ":slice=0", queue_opt
     )

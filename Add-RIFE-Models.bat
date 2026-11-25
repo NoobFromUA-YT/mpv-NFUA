@@ -386,14 +386,18 @@ if (-not $NoPatch) {
     $candRoots = @($PatchSource, (Join-Path $batDir "source"), $batDir) | Where-Object { $_ }
     foreach ($root in $candRoots) {
         $cand = Join-Path $root "portable_config\scripts\rife.lua"
-        if ((Test-Path $cand) -and ((Get-Content -Raw -LiteralPath $cand) -match "rife-model")) {
-            $srcLua = $cand
-            break
+        if (Test-Path $cand) {
+            $candTxt = Get-Content -Raw -LiteralPath $cand
+            if (($candTxt -match "rife-model") -and ($candTxt -notmatch "align=%d")) {
+                $srcLua = $cand
+                break
+            }
         }
     }
 
     $luaTarget = Join-Path $ScriptsDir "rife.lua"
-    if ((Test-Path $luaTarget) -and ((Get-Content -Raw -LiteralPath $luaTarget) -match "rife-model")) {
+    $luaTxt = if (Test-Path $luaTarget) { Get-Content -Raw -LiteralPath $luaTarget } else { "" }
+    if (($luaTxt -match "rife-model") -and ($luaTxt -notmatch "align=%d")) {
         Write-Host "  scripts\rife.lua already supports multi-model rolling & persistence."
     } else {
         $tmpLua = "$luaTarget.tmp"
@@ -404,12 +408,13 @@ if (-not $NoPatch) {
         } else {
             try {
                 Download-OrCopy "$RepoRawUrl/portable_config/scripts/rife.lua" $tmpLua "rife.lua"
-                if ((Get-Content -Raw -LiteralPath $tmpLua) -match "rife-model") {
+                $fetchedTxt = Get-Content -Raw -LiteralPath $tmpLua
+                if (($fetchedTxt -match "rife-model") -and ($fetchedTxt -notmatch "align=%d")) {
                     Move-Item -LiteralPath $tmpLua -Destination $luaTarget -Force
                     Write-Host "  Updated scripts\rife.lua from GitHub."
                 } else {
                     Remove-Item -Force $tmpLua -ErrorAction SilentlyContinue
-                    Write-Warning "Fetched rife.lua did not contain rife-model; skipping."
+                    Write-Warning "Fetched rife.lua did not match fixed rife-model script; skipping."
                 }
             } catch {
                 Remove-Item -Force $tmpLua -ErrorAction SilentlyContinue

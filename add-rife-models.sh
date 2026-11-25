@@ -309,14 +309,14 @@ patch_player() {
     [[ -n "$PATCH_SOURCE" ]] && cand_roots+=("$PATCH_SOURCE")
     cand_roots+=("$SCRIPT_DIR/source" "$SCRIPT_DIR")
     for root in "${cand_roots[@]}"; do
-        if [[ -f "$root/portable_config/scripts/rife.lua" ]] && grep -q "rife-model" "$root/portable_config/scripts/rife.lua"; then
+        if [[ -f "$root/portable_config/scripts/rife.lua" ]] && grep -q "rife-model" "$root/portable_config/scripts/rife.lua" && ! grep -q "align=%d" "$root/portable_config/scripts/rife.lua"; then
             src_lua="$root/portable_config/scripts/rife.lua"
             break
         fi
     done
 
     local lua_target="$SCRIPTS_DIR/rife.lua"
-    if [[ -f "$lua_target" ]] && grep -q "rife-model" "$lua_target"; then
+    if [[ -f "$lua_target" ]] && grep -q "rife-model" "$lua_target" && ! grep -q "align=%d" "$lua_target"; then
         printf "  scripts/rife.lua already supports multi-model rolling & persistence.\n"
     else
         local tmp_lua="$lua_target.tmp.$$"
@@ -324,7 +324,7 @@ patch_player() {
             cp -f "$src_lua" "$tmp_lua"
             mv -f "$tmp_lua" "$lua_target"
             printf "  Patched scripts/rife.lua from %s\n" "$src_lua"
-        elif fetch_item "$REPO_RAW_URL/portable_config/scripts/rife.lua" "$tmp_lua" "rife.lua" && grep -q "rife-model" "$tmp_lua"; then
+        elif fetch_item "$REPO_RAW_URL/portable_config/scripts/rife.lua" "$tmp_lua" "rife.lua" && grep -q "rife-model" "$tmp_lua" && ! grep -q "align=%d" "$tmp_lua"; then
             mv -f "$tmp_lua" "$lua_target"
             printf "  Updated scripts/rife.lua from GitHub.\n"
         else

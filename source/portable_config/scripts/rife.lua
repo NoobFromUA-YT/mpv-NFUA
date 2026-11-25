@@ -24,9 +24,9 @@ local o = {
     full_flow_rate = 280,
     half_flow_rate = 370,
     -- Heights the network cannot take as they are (not divisible by model align):
-    -- "always" leaves rows out at top/bottom (faster), "nearest" trims only when closer than padding,
-    -- "no" always pads and shows every row.
-    trim = "always",
+    -- "no" always pads and shows every row (default), "nearest" trims only when closer than padding,
+    -- "always" leaves rows out at top/bottom (faster).
+    trim = "no",
     -- Fixed rule instead of automatic choice (0 = off).
     rule_multiplier = 0,
     rule_max_fps = 30,
@@ -872,7 +872,7 @@ mp.register_script_message("rife-assess", function()
     end, true)
 end)
 
-local TRIM_MODES = { "always", "nearest", "no" }
+local TRIM_MODES = { "no", "nearest", "always" }
 
 -- "cycle" (or nothing) steps to the next mode; a mode's name picks it.
 mp.register_script_message("rife-trim", function(arg)

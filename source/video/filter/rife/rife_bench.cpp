@@ -124,13 +124,14 @@ void trim_rows(int h, int mod, int *top, int *bottom)
 }
 
 bool measure(Cuda &cu, CUcontext_ ctx, const char *onnx, const char *engine_dir,
-             bool half, int mod, int w, int h, int runs, int opt_level)
+             bool half, int mod, bool trim, int w, int h, int runs, int opt_level)
 {
     rife_trt_config cfg{};
     cfg.cuda_ctx = ctx;
     cfg.w = w;
     cfg.h = h;
-    trim_rows(h, mod, &cfg.trim_top, &cfg.trim_bottom);
+    if (trim)
+        trim_rows(h, mod, &cfg.trim_top, &cfg.trim_bottom);
     cfg.depth = 8;
     cfg.bps = 1;
     cfg.kr = 0.2126f;
@@ -192,6 +193,7 @@ int main(int argc, char **argv)
     long full_max_pixels = 2560L * 1440;
     int align = 32;
     int align_half = 0;
+    bool trim = false;
     int runs = 30;
     int opt_level = 3;
     for (int i = 1; i < argc; i++) {
@@ -204,6 +206,7 @@ int main(int argc, char **argv)
         else if (a == "--full-max-pixels") full_max_pixels = atol(next().c_str());
         else if (a == "--align") align = std::clamp(atoi(next().c_str()), 8, 256);
         else if (a == "--align-half") align_half = std::clamp(atoi(next().c_str()), 0, 256);
+        else if (a == "--trim") trim = true;
         else if (a == "--runs") runs = std::max(3, atoi(next().c_str()));
         else if (a == "--opt-level") opt_level = std::clamp(atoi(next().c_str()), 0, 5);
         else if (a == "-v") g_verbose = 1;
@@ -215,7 +218,7 @@ int main(int argc, char **argv)
     if (model.empty()) {
         fprintf(stderr, "usage: rife-bench --model FULL.onnx [--model-half HALF.onnx] "
                         "[--engine-dir DIR] [--sizes WxH,...] [--align N] "
-                        "[--align-half N] [--runs N]\n");
+                        "[--align-half N] [--trim] [--runs N]\n");
         return 2;
     }
     bool has_half = !model_half.empty();
@@ -250,13 +253,13 @@ int main(int argc, char **argv)
         if (sscanf(s.c_str(), "%dx%d", &w, &h) != 2 || w < 128 || h < 128)
             continue;
         if (!has_half) {
-            (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, w, h, runs, opt_level)
+            (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, trim, w, h, runs, opt_level)
                  ? done : failed)++;
         } else {
             if ((long)w * h <= full_max_pixels)
-                (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, w, h, runs, opt_level)
+                (measure(cu, ctx, model.c_str(), engine_dir.c_str(), false, align, trim, w, h, runs, opt_level)
                      ? done : failed)++;
-            (measure(cu, ctx, model_half.c_str(), engine_dir.c_str(), true, eff_align_half, w, h, runs, opt_level)
+            (measure(cu, ctx, model_half.c_str(), engine_dir.c_str(), true, eff_align_half, trim, w, h, runs, opt_level)
                  ? done : failed)++;
         }
     }
